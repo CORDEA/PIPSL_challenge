@@ -40,16 +40,20 @@ string readFile(const string& filename) {
 
 vector<int> checkBlocks(string& seq, const string& query, const int& block=50) {
     const   string      seq_bu      = seq;
-            int         ned_hits    = query.length() / block;
+    const   int         ned_hits    = query.length() / block;
             vector<int> index_arr;
 
     for (int i=0; i <= query.length() - block; i++) {
         int count = 0;
 
         while (true) {
+            if (i > query.length()) {
+                seq = seq_bu;
+                break;
+            }
             int index = seq.find(query.substr(i, block));
 
-            if (index != string::npos) {
+            if (index != string::npos and seq.length() > index + block + 1) {
                 seq = seq.substr(index + block);
                 index_arr.push_back(index);
                 ++count;
@@ -112,9 +116,16 @@ int main(int argc, char* argv[]) {
     // 2: query FASTA
     // 3: read blocks
     string      seq         = readFile(argv[1]);
-    vector<int> index_arr   = checkBlocks(seq, readFile(argv[3]), atoi(argv[3]));
+    string      query       = readFile(argv[2]);
+    int         block       = atoi(argv[3]);
+    if (block > query.length()) {
+        cout << block << " >> " << query.length() << endl;
+        block = query.length();
+    }
+
+    vector<int> index_arr   = checkBlocks(seq, query, block);
     int         range[]     = {0, 0};
     if (argc > 5) for (int i=0; i < 2; i++) range[i] = atoi(argv[4+i]);
-    drawhist(seq.length(), index_arr, range);
+    if (index_arr.size() != 0) drawhist(seq.length(), index_arr, range);
     return 0;
 }
